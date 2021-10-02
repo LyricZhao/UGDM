@@ -1,0 +1,5 @@
+# macOS things
+.DS_Store
+
+# Large data files
+data/FB_entity2name.tsv
