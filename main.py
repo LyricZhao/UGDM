@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--k', help='Number of clusters in K-Means', type=int)
 args = parser.parse_args()
 
+
 # Read embeddings
 embeddings = np.memmap('data/transr_FB15K237.bin', dtype='float32', mode='r')
 embeddings = embeddings.reshape((14541, 128))
@@ -52,13 +53,14 @@ for i in range(n_clusters):
         if h in subgraph_indices or t in subgraph_indices:
             subgraph_edges.append((h, t))
     subgraph = nx.Graph(subgraph_edges)
-    degree_centrality = nx.degree_centrality(graph)
-    degree_centrality = [degree_centrality[node] if node in degree_centrality else 0 for node in subgraph_indices]
-    ranks = np.argsort(degree_centrality)[::-1]
+    degree_centrality = nx.degree_centrality(subgraph)
+    degree_centrality = dict(filter(lambda item: item[0] in subgraph_indices, degree_centrality.items()))
+    ranks = dict(sorted(degree_centrality.items(), key=lambda item: -item[1]))
+    keys = list(ranks.keys())
     print(' > Ranks:')
-    for i in range(min(topk, len(ranks))):
-        print('   > Top {}: {} (id: {}, score: {})'.format(i + 1, id2name[ranks[i]], ranks[i], degree_centrality[ranks[i]]))
+    for k in range(min(topk, len(ranks))):
+        print('   > Top {}: {} (id: {}, score: {})'.format(k + 1, id2name[keys[k]], keys[k], degree_centrality[keys[k]]))
 
-# T-SNE (a way for reducing dimensions)
+# T-SNE (a way for dimension reduction)
 # t_sne = TSNE()
 # t_sne.fit(embeddings)
